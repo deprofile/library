@@ -1,5 +1,3 @@
-import java.time.LocalDate;
-
 public class Book {
     private long id;
     private String name;
@@ -9,9 +7,10 @@ public class Book {
     private Reader borrowedBy;
     private int borrowCount;
 
-    public Book(String name, int year) {
+    public Book(String name, int year, Author author) {
         this.name = name;
         this.year = year;
+        this.author = author;
         this.id = Identifiers.bookId++;
     }
 
@@ -27,7 +26,7 @@ public class Book {
 
     void returnBack(){
         if (!isBorrowed){
-            throw new LibraryException(BOOK_NOT_BORROWED);
+            throw new LibraryException(ErrorCode.BOOK_NOT_BORROWED);
         }
         isBorrowed = false;
         borrowedBy = null;
@@ -64,6 +63,9 @@ public class Book {
         return borrowCount;
     }
 
+    public Author getAuthor() {
+        return author;
+    }
 
     long getId(){
         return id;

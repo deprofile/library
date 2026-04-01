@@ -1,13 +1,16 @@
+import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Library {
     Map<Long, Book> books = new HashMap<>();
-    Map<Long, Book> borrowedBooks = new HashMap<>();
     Map<Long, Reader> readers = new HashMap<>();
-    Map<Long, List<BorrowRecord>> borrowHistoryMap = new HashMap<>();
+    NavigableMap<LocalDate, List<BorrowRecord>> borrowHistoryMap = new TreeMap<>();
+    Map<Long, List<Book>> authorBookMap = new HashMap<>();
 
     void addBook(Book book){
         books.put(book.getId(), book);
+        authorBookMap.computeIfAbsent(book.getAuthor().getId(), _ -> new ArrayList<>()).add(book);
     }
 
     void removeBook(Book book){
@@ -15,6 +18,7 @@ public class Library {
             throw new LibraryException(ErrorCode.BOOK_IS_BORROWED);
         }
         books.remove(book.getId());
+        authorBookMap.get(book.getAuthor().getId()).removeIf(el -> el.equals(book));
     }
 
     Book findBook(long bookId){
@@ -55,8 +59,6 @@ public class Library {
         return readers.values().stream().toList();
     }
 
-
-
     void borrowBook(long readerId, long bookId){
         Reader reader = findReader(readerId);
         Book book = findBook(bookId);
@@ -76,12 +78,25 @@ public class Library {
         book.returnBack();
     }
 
+    public Map<Long, List<Book>> getAuthorBookMap() {
+        return authorBookMap;
+    }
+
+    List<BorrowRecord> getBorrowHistoryByRange(LocalDate startDate, LocalDate endDate){
+        if (startDate.isAfter(endDate)){
+            throw new LibraryException(ErrorCode.GLOBAL_ERROR);
+        }
+        return borrowHistoryMap.subMap(startDate, true, endDate, true)
+                .values()
+                .stream()
+                .flatMap(el -> el.stream())
+                .toList();
+    }
 
     @Override
     public String toString() {
         return "Library{" +
                 "books=" + books +
-                ", borrowedBooks=" + borrowedBooks +
                 ", readers=" + readers +
                 '}';
     }

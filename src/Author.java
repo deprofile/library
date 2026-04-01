@@ -3,11 +3,12 @@ public class Author {
     private int age;
     private long id;
 
-    public Author(String name, int age, long id) {
+    public Author(String name, int age) {
         this.name = name;
         this.age = age;
         this.id = Identifiers.authorId++;
     }
+
 
     public String getName() {
         return name;

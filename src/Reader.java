@@ -42,6 +42,9 @@ public class Reader {
     }
 
     public List<Book> getBorrowedBooks() {
+        if (borrowedBooks == null){
+            throw new LibraryException(ErrorCode.READER_HAS_NO_BOOKS);
+        }
         return borrowedBooks;
     }
 

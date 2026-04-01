@@ -6,7 +6,9 @@ public enum ErrorCode  {
     BOOK_LIMIT("Reader has already have 3 books", 400),
     ALREADY_EXISTS("That subject already exists", 400),
     GLOBAL_ERROR("smth went wrong", 400),
-    READER_HAS_BOOKS("READER HAS BOOKS", 400);
+    READER_HAS_BOOKS("READER HAS BOOKS", 400),
+    OBJECT_IS_NULL("object is null", 400),
+    READER_HAS_NO_BOOKS("Reader has no books", 400);
 
     private String message;
     private int code;
