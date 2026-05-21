@@ -1,103 +1,101 @@
+import entity.Author;
+import entity.Book;
+import entity.Reader;
+import lombok.Locked;
+import repository.AuthorRepository;
+import repository.BookRepository;
+import repository.ReaderBooksRepository;
+import repository.ReaderRepository;
+
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Library {
-    Map<Long, Book> books = new HashMap<>();
-    Map<Long, Reader> readers = new HashMap<>();
-    NavigableMap<LocalDate, List<BorrowRecord>> borrowHistoryMap = new TreeMap<>();
-    Map<Long, List<Book>> authorBookMap = new HashMap<>();
+    private final BookRepository br = new BookRepository();
+    private final ReaderRepository rr = new ReaderRepository();
+    private final AuthorRepository ar = new AuthorRepository();
+    private final ReaderBooksRepository rbr = new ReaderBooksRepository();
+
+
+    /*Book*/
+
 
     void addBook(Book book){
-        books.put(book.getId(), book);
-        authorBookMap.computeIfAbsent(book.getAuthor().getId(), _ -> new ArrayList<>()).add(book);
+        br.save(book.getTitle(), book.getLocalDate());
     }
 
-    void removeBook(Book book){
-        if (book.isBorrowed()){
-            throw new LibraryException(ErrorCode.BOOK_IS_BORROWED);
-        }
-        books.remove(book.getId());
-        authorBookMap.get(book.getAuthor().getId()).removeIf(el -> el.equals(book));
+    void removeBook(Long id){
+        br.remove(id);
     }
 
-    Book findBook(long bookId){
-        Book book = books.get(bookId);
-        if (Objects.isNull(book)){
-            throw new LibraryException(ErrorCode.BOOK_NOT_FOUND);
-        }
-        return books.get(bookId);
+    Book findBook(Book book){
+        return br.getById(book.getId());
     }
 
-    public List<Book> getAllBooks(){
-        return books.values().stream().toList();
+    public void getAllBooks(){
+        br.getAll();
     }
 
 
+    /*Book*/
+
+    /*Reader*/
 
 
     void addReader(Reader reader) {
-        readers.put(reader.getId(), reader);
+        rr.save(reader.getName(), reader.getTotalBooks());
     }
 
     void removeReader(Reader reader){
-        if (!reader.getBorrowedBooks().isEmpty()){
-            throw new LibraryException(ErrorCode.READER_HAS_BOOKS);
-        }
-        readers.remove(reader.getId());
+        rr.remove(reader.getId());
     }
 
-    Reader findReader(long readerId){
-        Reader reader = readers.get(readerId);
-        if (Objects.isNull(reader)){
-            throw new LibraryException(ErrorCode.READER_NOT_FOUND);
-        }
-        return reader;
+    Reader findReader(Reader reader){
+        return rr.getById(reader.getId());
     }
 
-    public List<Reader> getAllReaders(){
-        return readers.values().stream().toList();
+    void getAllReaders(){
+        rr.getAll();
     }
 
-    void borrowBook(long readerId, long bookId){
-        Reader reader = findReader(readerId);
-        Book book = findBook(bookId);
 
-        if (book.isBorrowed()){
-            throw new LibraryException(ErrorCode.BOOK_IS_BORROWED);
-        }
-        reader.borrowBook(book);
-        book.borrow(reader);
+    /*Reader*/
+
+    /*Author*/
+
+    void addAuthor(Author author){
+        ar.save(author.getName());
+    }
+
+    void removeAuthor(Long id){
+        br.remove(id);
+    }
+
+    Book findAuthor(Book book){
+        return br.getById(book.getId());
+    }
+
+    public void getAllAuthor(){
+        br.getAll();
+    }
+
+    /*Author*/
+
+
+    public void borrowBook(long readerId, long bookId){
+
+        rbr.borrowBook(readerId, bookId);
     }
 
     void returnBook(long readerId, long bookId){
-        Reader reader = findReader(readerId);
-        Book book = findBook(bookId);
-//        НАЙТИ КНИГУ И ПОСМОТРЕТЬ ЕСТЬ ЛИ ОНА ИМЕННО У ТОГО РИДЕРА
-        reader.returnBook(book);
-        book.returnBack();
+        // сверху
     }
 
-    public Map<Long, List<Book>> getAuthorBookMap() {
-        return authorBookMap;
+    public void getAuthorBookMap() {
+        //
     }
 
-    List<BorrowRecord> getBorrowHistoryByRange(LocalDate startDate, LocalDate endDate){
-        if (startDate.isAfter(endDate)){
-            throw new LibraryException(ErrorCode.GLOBAL_ERROR);
-        }
-        return borrowHistoryMap.subMap(startDate, true, endDate, true)
-                .values()
-                .stream()
-                .flatMap(el -> el.stream())
-                .toList();
-    }
-
-    @Override
-    public String toString() {
-        return "Library{" +
-                "books=" + books +
-                ", readers=" + readers +
-                '}';
+    void getBorrowHistoryByRange(LocalDate startDate, LocalDate endDate){
+        //
     }
 }
